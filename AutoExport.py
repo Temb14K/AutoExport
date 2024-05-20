@@ -16,9 +16,15 @@ links = ['https://docs.google.com/spreadsheets/d/e/2PACX-1vSMeMZE8Vd05LfReLQBelH
          'https://docs.google.com/spreadsheets/d/e/2PACX-1vSskTHGF9U3msgwLWe_JWV1eCjShbjkbgkZS0Q9XGayZT7qn8QRM2bL09Zs6odd3gGM2ZkfzQ_TFRnk/pub?output=xlsx',
          'https://docs.google.com/spreadsheets/d/e/2PACX-1vRDtGdUHQGdWiXE7jjmxUHfB54kpDkAzo7eXRZvLLzBHmC_YYLr-3dqWnOUSpe_PJoGIPaDItkSSvaM/pub?output=xlsx',
          'https://docs.google.com/spreadsheets/d/e/2PACX-1vSzyhYcSld1eMLxQ2AO0lW8atDZP16ZERUD0xjRBRb9e4tC_hMT6trIQdycvm-asxFf7SeNW20Dov1k/pub?output=xlsx',
-         'https://docs.google.com/spreadsheets/d/e/2PACX-1vQhNECAL9lEPHwjc9aKlngToTPmprLkMfnDe5I-SPmgrbYFzG8zrY0aittd9savxIQ34_4iUurPrtah/pub?output=xlsx']
+         'https://docs.google.com/spreadsheets/d/e/2PACX-1vQhNECAL9lEPHwjc9aKlngToTPmprLkMfnDe5I-SPmgrbYFzG8zrY0aittd9savxIQ34_4iUurPrtah/pub?output=xlsx',
+         'https://docs.google.com/spreadsheets/d/e/2PACX-1vTzirMiIld82QHfkIgTwXNbpprU8b4tWiud4VSjvcLATE1fT9vBuXcQcXRAuDTkXoKFahT7oD3Ubzpq/pub?output=xlsx',
+         'https://docs.google.com/spreadsheets/d/e/2PACX-1vQxX-9VpGCRKtlfEWYNNLsqfEykCwbgX3ozMaInRu2ezTsF10HtCFxQHPgYCCkyBVmFhKz8KmCMzT-y/pub?output=xlsx',
+         'https://docs.google.com/spreadsheets/d/e/2PACX-1vSE4udJYp-JBKbFHpWesYHpdA73ZKXjQ4Is8-VdDzg3u_bUM6VR3sK_3O34QSIwtK58u_r3LO1wRils/pub?output=xlsx',
+         'https://docs.google.com/spreadsheets/d/e/2PACX-1vTqw_1k2T4zd6gQqXXMx2Tv4YWiqLx72vEqP7xqn7RGwNIwiFhaYS97dwPzKb-dsN-v27HIttpyNQZY/pub?output=xlsx',
+         'https://docs.google.com/spreadsheets/d/e/2PACX-1vSnsrj4GYHmHTD-lfU66HVEtfPzoKEatLuRag_j1s9O06PQ-4E8GcqXrlKWykJoU9I8WbfJPAwhD0Iu/pub?output=xlsx']
 
 browser_path = 'C:\\\\Program Files\\\\Google\\\\Chrome\\\\Application\\\\chrome.exe'
+folder_path = 'C:\\\\testfolder'
 
 active = True
 commands = [
@@ -26,7 +32,12 @@ commands = [
     [browser_path, links[1]],
     [browser_path, links[2]],
     [browser_path, links[3]],
-    [browser_path, links[4]]
+    [browser_path, links[4]],
+    [browser_path, links[5]],
+    [browser_path, links[6]],
+    [browser_path, links[7]],
+    [browser_path, links[8]],
+    [browser_path, links[9]],
 ]
 
 print('Приветствую')
@@ -37,9 +48,9 @@ while active:
             try:
                 all_links_ok = all(requests.get(link).ok for link in links)
                 if all_links_ok:
-                    delete_files('C:\\\\testfolder')
+                    delete_files(folder_path)
                     processes = [subprocess.Popen(cmd) for cmd in commands]
-                    time.sleep(20)
+                    time.sleep(30)
                     os.system('taskkill /f /im chrome.exe')
                     time.sleep(int(interval))
             except requests.exceptions.RequestException or requests.exceptions.HTTPError or requests.exceptions.ConnectionError or requests.exceptions.Timeout:
