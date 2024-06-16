@@ -1,7 +1,14 @@
 import time
 import os
-import subprocess
 import requests
+import re
+from urllib.parse import unquote
+import json
+
+links = []
+folder_path = ''
+
+active = True
 
 def delete_files(folder_path):
     for filename in os.listdir(folder_path):
@@ -12,40 +19,69 @@ def delete_files(folder_path):
         except Exception as e:
             print('Ошибка при удалении файла')
 
-links = ['https://docs.google.com/spreadsheets/d/e/2PACX-1vSMeMZE8Vd05LfReLQBelHfxppucu-2SiS6gYa3E6wf9oR1S-54qFkURjW8iKz26bdez2r_7_3oSeWt/pub?output=xlsx',
-         'https://docs.google.com/spreadsheets/d/e/2PACX-1vSskTHGF9U3msgwLWe_JWV1eCjShbjkbgkZS0Q9XGayZT7qn8QRM2bL09Zs6odd3gGM2ZkfzQ_TFRnk/pub?output=xlsx',
-         'https://docs.google.com/spreadsheets/d/e/2PACX-1vRDtGdUHQGdWiXE7jjmxUHfB54kpDkAzo7eXRZvLLzBHmC_YYLr-3dqWnOUSpe_PJoGIPaDItkSSvaM/pub?output=xlsx',
-         'https://docs.google.com/spreadsheets/d/e/2PACX-1vSzyhYcSld1eMLxQ2AO0lW8atDZP16ZERUD0xjRBRb9e4tC_hMT6trIQdycvm-asxFf7SeNW20Dov1k/pub?output=xlsx',
-         'https://docs.google.com/spreadsheets/d/e/2PACX-1vQhNECAL9lEPHwjc9aKlngToTPmprLkMfnDe5I-SPmgrbYFzG8zrY0aittd9savxIQ34_4iUurPrtah/pub?output=xlsx',
-         'https://docs.google.com/spreadsheets/d/e/2PACX-1vTzirMiIld82QHfkIgTwXNbpprU8b4tWiud4VSjvcLATE1fT9vBuXcQcXRAuDTkXoKFahT7oD3Ubzpq/pub?output=xlsx',
-         'https://docs.google.com/spreadsheets/d/e/2PACX-1vQxX-9VpGCRKtlfEWYNNLsqfEykCwbgX3ozMaInRu2ezTsF10HtCFxQHPgYCCkyBVmFhKz8KmCMzT-y/pub?output=xlsx',
-         'https://docs.google.com/spreadsheets/d/e/2PACX-1vSE4udJYp-JBKbFHpWesYHpdA73ZKXjQ4Is8-VdDzg3u_bUM6VR3sK_3O34QSIwtK58u_r3LO1wRils/pub?output=xlsx',
-         'https://docs.google.com/spreadsheets/d/e/2PACX-1vTqw_1k2T4zd6gQqXXMx2Tv4YWiqLx72vEqP7xqn7RGwNIwiFhaYS97dwPzKb-dsN-v27HIttpyNQZY/pub?output=xlsx',
-         'https://docs.google.com/spreadsheets/d/e/2PACX-1vSnsrj4GYHmHTD-lfU66HVEtfPzoKEatLuRag_j1s9O06PQ-4E8GcqXrlKWykJoU9I8WbfJPAwhD0Iu/pub?output=xlsx']
+def get_response(links):
+    for url in links:
+        response = requests.get(url, allow_redirects=True)
+        response.raise_for_status()  # Проверяем, что запрос прошел успешно
 
-browser_path = 'C:\\\\Users\\\\Артем\\\\AppData\Local\\\\Programs\\\\Opera\\\\opera.exe'
-folder_path = 'C:\\\\testfolder'
+def download_files(links):
+    for url in links:
+        response = requests.get(url, allow_redirects=True)
+        if 'content-disposition' in response.headers:
+            filename = re.findall('filename=(.+)', response.headers['content-disposition'])[0]
+        else:
+            filename = 'default_filename'  # Используем стандартное имя, если имя файла не указано
 
-active = True
-commands = [[browser_path, link] for link in links]
+        filename = unquote(filename)  # Декодируем имя файла, если оно было закодировано
+        filename = filename.split("''", 1)[1]
+        print(filename)
+        with open(folder_path + filename, 'wb') as file:
+            file.write(response.content)
+        print(f'Файл успешно скачан и сохранен как {filename}')
 
-print('Приветствую')
-while active: 
+while True:
+    print('Приветствую')
+    first_answer = input('Вы хотите изменить папку загрузки? Введите Y если хотите. Если нет, введите любое значение\n ').upper()
+    if first_answer == 'Y':
+       folder_path = input('Введите путь к папке в формате C:/path/test/\n ')
+       with open('folder_path.json', 'w') as f:
+           json.dump(folder_path, f)
+    while active:
+        second_answer = input('Вы хотите добавить ссылки? Введите Y если хотите. Если нет, введите любое значение.\n ').upper()
+        second_answer.upper()
+        if second_answer == 'Y':
+            links.append(input('Введите URL адрес ссылки:\n '))
+            with open('links.json', 'w') as l:
+                json.dump(links, l)
+            continue
+        else:
+            break
     interval = input('Введите интервал загрузки в секундах: ')
     if interval.isdecimal() and int(interval) > 0:
-        while active:
+        while True:
             try:
-                all_links_ok = all(requests.get(link).ok for link in links)
-                if all_links_ok:
-                    delete_files(folder_path)
-                    processes = [subprocess.Popen(cmd) for cmd in commands]
-                    time.sleep(20)
-                    os.system('taskkill /f /im opera.exe')
-                    time.sleep(int(interval))
-            except requests.exceptions.RequestException or requests.exceptions.HTTPError or requests.exceptions.ConnectionError or requests.exceptions.Timeout:
-                print('Возникли проблемы при подключении')
-                time.sleep(5)
-                active = False       
+                with open ('folder_path.json') as f:
+                    folder_path = json.load(f)
+            except:
+                print('Файл folder_path.json поврежден или отсутствует')
+            try:
+                with open ('links.json') as l:
+                    links = json.load(l)
+            except:
+                print('Файл links.json поврежден или отсутствует')
+            try:
+                get_response(links)
+            except Exception as e:
+                print(f'Возникли проблемы при подключении:\n {e}')
+                continue
+            else:
+                delete_files(folder_path)     
+                download_files(links)
+                time.sleep(int(interval))
+                continue
     else:
         print('Введите натуральное число')
         continue
+
+
+
